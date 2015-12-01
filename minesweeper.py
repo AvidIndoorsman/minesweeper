@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 ################################################################################
 #
 #	Author: 		Andrew Peterson
@@ -8,7 +10,6 @@
 #
 ################################################################################
 
-#!/usr/bin/env python
 
 import curses, random
 from curses import wrapper
@@ -162,10 +163,10 @@ def play(scrn,gameSizeY,gameSizeX,numMines):
 		
 		# update info window
 		game_win.refresh(yoffset,xoffset,0,0,maxY-1,maxX-1)	
-		info_win.addstr(1,1,"X = " + str(x/2 + xoffset/2) + " Y = " + str(y + yoffset) + "           ")
+		info_win.addstr(1,1,"X = " + str(x/2 + xoffset/2) + " Y = " + str(y + yoffset) + "   ")
 		info_win.addstr(2,1,"Unrevealed spaces: " + str(gameBoard.spacesLeft) + "    ")
-		info_win.addstr(3,1,"Number of Mines: " + str(gameBoard.mines))
-		info_win.addstr(4,1,"Marked Space:  " + str(gameBoard.numMarked))
+		info_win.addstr(3,1,"Number of mines: " + str(gameBoard.mines))
+		info_win.addstr(4,1,"Marked spaces:  " + str(gameBoard.numMarked) + " ")
 		
 		if stop:
 			info_win.addstr(5,1,"Sorry you hit a mine     ",curses.color_pair(2))
