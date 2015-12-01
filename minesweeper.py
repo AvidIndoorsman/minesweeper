@@ -1,3 +1,13 @@
+################################################################################
+#
+#	Author: 		Andrew Peterson
+#	
+#	Class:			ECE2500
+#	
+#	Description:	This python file creates a terminal game of minesweeper
+#
+################################################################################
+
 #!/usr/bin/env python
 
 import curses, random
@@ -22,7 +32,8 @@ class GameBoard:
 		self.board = [[GameTile() for x in range(0,boardX)] for y in range(0,boardY)]
 		self.maxY = boardY
 		self.maxX = boardX
-		
+		self.mines = maxMines
+		self.numMarked = 0
 		# add mines and numbers
 		count = 0
 		while count != maxMines:
@@ -39,7 +50,7 @@ class GameBoard:
 								if self.board[ry+j][rx+i].value != -1:
 									self.board[ry+j][rx+i].value += 1
 							
-		
+# Control the game's operation		
 def play(scrn,gameSizeY,gameSizeX,numMines):
 		
 	info_winX = 30
@@ -49,7 +60,6 @@ def play(scrn,gameSizeY,gameSizeX,numMines):
 	curses.resizeterm(32,62+info_winX)
 	scrn.refresh()
 	
-	# make variable
 	smaxY, smaxX = scrn.getmaxyx()
 	
 	game_win = curses.newpad(gameSizeY+2,(gameSizeX*2)+2)
@@ -63,10 +73,7 @@ def play(scrn,gameSizeY,gameSizeX,numMines):
 	info_win.box()
 	
 	# create the game board
-	#gameBoard = createBoard(gameSizeY,gameSizeX)
 	gameBoard = GameBoard(gameSizeY,gameSizeX,numMines)
-	#gameBoard = BoardObject.board
-	#mineBoard(gameBoard,gameSizeY,gameSizeX,10)
 	
 	# init the display
 	for y in range(1,gameSizeY+1):
@@ -77,10 +84,12 @@ def play(scrn,gameSizeY,gameSizeX,numMines):
 	xoffset = 0
 	yoffset = 0
 	
+	# Place the cursor at the starting location
 	scrn.move(beginY+1,beginX+2)
 
 	pmaxY, pmaxX = game_win.getmaxyx()
 	
+	# Set scrolling bounds
 	if pmaxY > smaxY:
 		maxY = smaxY
 		yoffsetMax = pmaxY - (smaxY)
@@ -99,9 +108,13 @@ def play(scrn,gameSizeY,gameSizeX,numMines):
 	
 	stop = False	
 	
+	# Play the game
 	while (not stop) and (not gameBoard.spacesLeft == numMines):
 		event = scrn.getch()
 
+		# Handle Key presses
+		
+		# Terminate the program if q is pressed
 		if event == ord("q"):
 			return True
 
@@ -150,26 +163,29 @@ def play(scrn,gameSizeY,gameSizeX,numMines):
 		# update info window
 		game_win.refresh(yoffset,xoffset,0,0,maxY-1,maxX-1)	
 		info_win.addstr(1,1,"X = " + str(x/2 + xoffset/2) + " Y = " + str(y + yoffset) + "           ")
-		info_win.addstr(2,1,"Unrevealed spaces " + str(gameBoard.spacesLeft) + "    ")
+		info_win.addstr(2,1,"Unrevealed spaces: " + str(gameBoard.spacesLeft) + "    ")
+		info_win.addstr(3,1,"Number of Mines: " + str(gameBoard.mines))
+		info_win.addstr(4,1,"Marked Space:  " + str(gameBoard.numMarked))
 		
 		if stop:
-			info_win.addstr(3,1,"Sorry you hit a mine",curses.color_pair(2))
-			info_win.addstr(4,1,"Press any key to return",curses.color_pair(2))
-			info_win.addstr(5,1,"to the main menu",curses.color_pair(2))
+			info_win.addstr(5,1,"Sorry you hit a mine     ",curses.color_pair(2))
+			info_win.addstr(6,1,"Press any key to return  ",curses.color_pair(2))
+			info_win.addstr(7,1,"to the main menu",curses.color_pair(2))
 			
 		else:
-			info_win.addstr(3,1,"Press 'm' to toggle mark")
-			info_win.addstr(4,1,"Press 'i' to inspect")
+			info_win.addstr(5,1,"Press 'm' to toggle mark")
+			info_win.addstr(6,1,"Press 'i' to inspect")
 					
 		info_win.refresh()
 		# move cursor back onto the board
 		scrn.move(y,x)
 		scrn.refresh()
 	
+	# Game is over, display message if you won 
 	if not stop:
-		info_win.addstr(3,1,"Congradulations you won",curses.color_pair(3))
-		info_win.addstr(4,1,"Press any key to return",curses.color_pair(3))
-		info_win.addstr(5,1,"to the main menu",curses.color_pair(3))
+		info_win.addstr(5,1,"Congradulations you won   ",curses.color_pair(3))
+		info_win.addstr(6,1,"Press any key to return   ",curses.color_pair(3))
+		info_win.addstr(7,1,"to the main menu",curses.color_pair(3))
 		info_win.refresh()
 		scrn.move(y,x)
 		scrn.refresh()
@@ -179,7 +195,7 @@ def play(scrn,gameSizeY,gameSizeX,numMines):
 
 	return False
 
-
+# Display the initialization message
 def init(scrn):
 	curses.resizeterm(32,62)
 	scrn.box()
@@ -191,6 +207,7 @@ def init(scrn):
 	while c not in (curses.KEY_UP, curses.KEY_LEFT, curses.KEY_RIGHT, curses.KEY_DOWN):
 		c = scrn.getch()
 
+# Main menu of the game
 def mainmenu(scrn):
 	# create color pairs
 	curses.start_color()
@@ -208,10 +225,8 @@ def mainmenu(scrn):
 	scrn.box()
 	quit = False
 	
-	
 	curloc=[(9,19),(11,19),(13,19),(15,19),(17,17),(19,27)]
 	index = 0;
-	
 	
 	while not quit:
 		y,x = curloc[index]
@@ -219,8 +234,8 @@ def mainmenu(scrn):
 		scrn.addstr(2,24,"MINESWEEPER")
 		scrn.addstr(7,28,"Play")
 		scrn.addstr(9,20, "10x10 Grid, 15 Mines")
-		scrn.addstr(11,20, "20x20 Grid, 70 Mines")
-		scrn.addstr(13,20, "30x30 Grid, 125 Mines")
+		scrn.addstr(11,20, "20x20 Grid, 60 Mines")
+		scrn.addstr(13,20, "30x30 Grid, 120 Mines")
 		scrn.addstr(15,20, "40x40 Grid, 200 Mines")
 		scrn.addstr(17,18, "Random Grid, Random Mines")
 		scrn.addstr(19,28,"Quit")
@@ -247,10 +262,10 @@ def mainmenu(scrn):
 				quit = play(scrn,10,10,15)
 				
 			elif index == 1:
-				quit = play(scrn,20,20,70)
+				quit = play(scrn,20,20,60)
 				
 			elif index == 2:
-				quit = play(scrn,30,30,125)
+				quit = play(scrn,30,30,120)
 				
 			elif index == 3:
 				quit = play(scrn,40,40,200)
@@ -267,7 +282,8 @@ def mainmenu(scrn):
 			curses.resizeterm(32,62)
 			scrn.box()
 			scrn.refresh()
-	
+
+# Update the game board	
 def update(locY, locX, gameBoard, game_win, mark):
 	x = ((locX+1)/2)-1
 	y = locY - 1
@@ -279,11 +295,13 @@ def update(locY, locX, gameBoard, game_win, mark):
 				board[y][x].marked = True
 				game_win.addch(locY,((x+1)*2)-1,ord(" "),curses.color_pair(1))
 				game_win.addch(locY,(x+1)*2,ord("X"),curses.color_pair(2))
+				gameBoard.numMarked += 1
 				
 			else:
 				board[y][x].marked = False
 				game_win.addch(locY,((x+1)*2)-1,ord(" "),curses.color_pair(1))
 				game_win.addch(locY,(x+1)*2,ord("'"),curses.color_pair(1))
+				gameBoard.numMarked -= 1
 				
 	else:
 		if not board[y][x].revealed:
@@ -305,6 +323,7 @@ def update(locY, locX, gameBoard, game_win, mark):
 					
 	return stop
 	
+# Recursively reveal all unmarked values around 0
 def updateRec(y, x, gameBoard, game_win):
 	
 	gameBoard.board[y][x].setRevealed()
