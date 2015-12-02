@@ -10,7 +10,6 @@
 #
 ################################################################################
 
-
 import curses, random
 from curses import wrapper
 
@@ -28,6 +27,7 @@ class GameTile:
 	
 class GameBoard:
 	def __init__(self,boardY,boardX,maxMines):	
+		self.generated = False
 		self.spacesRevealed = 0
 		self.spacesLeft = boardX*boardY
 		self.board = [[GameTile() for x in range(0,boardX)] for y in range(0,boardY)]
@@ -35,21 +35,27 @@ class GameBoard:
 		self.maxX = boardX
 		self.mines = maxMines
 		self.numMarked = 0
+		
+	def generateBoard(self,firstY,firstX):	
 		# add mines and numbers
+		self.generated = True
+		x = ((firstX+1)/2)-1
+		y = firstY - 1
 		count = 0
-		while count != maxMines:
-			rx = random.randint(0,boardX-1)
-			ry = random.randint(0,boardY-1)
-			if self.board[ry][rx].value != -1:
-				self.board[ry][rx].setValue(-1)
-				count += 1
+		while count != self.mines:
+			rx = random.randint(0,self.maxX-1)
+			ry = random.randint(0,self.maxY-1)
+			if rx != x and ry != y:
+				if self.board[ry][rx].value != -1:
+					self.board[ry][rx].setValue(-1)
+					count += 1
 				
-				for i in [-1,0,1]:
-					for j in [-1,0,1]:
-						if 0 <= (rx + i) <= boardX-1:
-							if 0 <= (ry + j) <= boardY-1:
-								if self.board[ry+j][rx+i].value != -1:
-									self.board[ry+j][rx+i].value += 1
+					for i in [-1,0,1]:
+						for j in [-1,0,1]:
+							if 0 <= (rx + i) <= self.maxX-1:
+								if 0 <= (ry + j) <= self.maxY-1:
+									if self.board[ry+j][rx+i].value != -1:
+										self.board[ry+j][rx+i].value += 1
 							
 # Control the game's operation		
 def play(scrn,gameSizeY,gameSizeX,numMines):
@@ -157,6 +163,8 @@ def play(scrn,gameSizeY,gameSizeX,numMines):
 			
 		elif event == ord("i"):
 			y,x = scrn.getyx()
+			if not gameBoard.generated:
+				gameBoard.generateBoard(y+yoffset,x+xoffset)
 			stop = update(y+yoffset,x+xoffset,gameBoard,game_win, False)
 			
 		y,x = scrn.getyx()
@@ -232,7 +240,7 @@ def mainmenu(scrn):
 	while not quit:
 		y,x = curloc[index]
 		curses.curs_set(2)
-		scrn.addstr(2,24,"MINESWEEPER")
+		scrn.addstr(2,25,"MINESWEEPER")
 		scrn.addstr(7,28,"Play")
 		scrn.addstr(9,20, "10x10 Grid, 15 Mines")
 		scrn.addstr(11,20, "20x20 Grid, 60 Mines")
