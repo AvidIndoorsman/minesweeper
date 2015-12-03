@@ -282,7 +282,7 @@ def mainmenu(scrn):
 			elif index == 4:
 				yrand = random.randint(10,50)
 				xrand = random.randint(10,50)
-				mines = random.randint((yrand*xrand/16),(yrand*xrand/8))
+				mines = random.randint((yrand*xrand/10),(yrand*xrand/7))
 				quit = play(scrn,yrand,xrand,mines)
 				
 			elif index == 5:
